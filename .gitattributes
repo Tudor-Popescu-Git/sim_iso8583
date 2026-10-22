@@ -1,0 +1,2 @@
+# Keep Unix line endings. Makefiles and shell scripts fail with Windows (CRLF) endings.
+* text=auto eol=lf
