@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stddef.h>
+#include <stdint.h>
 #include "framing.h"
 #include "sim_iso8583.h"      /* ISO_MAX_MSG */
 
@@ -18,9 +20,52 @@
 /* ------------------------------------------------------------------ */
 int read_exact(int fd, void *buf, size_t n)
 {
-    (void)fd;
-    (void)buf;
-    (void)n;
+    ssize_t r;
+    size_t done = 0;
+    unsigned char* ucbuf = (unsigned char*)buf;
+
+    if (ucbuf == NULL)
+    {
+        return -1;
+    }
+    if (n == 0)
+    {
+        return 1;
+    }
+    while (1)
+    {
+        r = read(fd, ucbuf + done, n - done);
+        if (r < 0)
+        {
+            if (errno == EINTR)
+            {
+                continue;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        if (r == 0)
+        {
+            if (done == 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        if (r > 0)
+        {
+            done += r;
+            if (done == n)
+            {
+                return 1;
+            }
+        }
+    }
     return -1;
 }
 
@@ -29,16 +74,49 @@ int read_exact(int fd, void *buf, size_t n)
 /*                                                                    */
 /* Same idea for writing: write() may accept fewer bytes than asked.  */
 /* Loop until all n bytes are written. Retry on EINTR. Return -1 on   */
-/* any other error. Return 0 when done.                               */
+/* any other error. Return 1 when done.                               */
 /* Note: writing to a socket the peer already closed raises SIGPIPE,  */
 /* which ends the process. Either ignore SIGPIPE in main.c            */
 /* (signal(SIGPIPE, SIG_IGN)) or use send() with MSG_NOSIGNAL.        */
 /* ------------------------------------------------------------------ */
 int write_all(int fd, const void *buf, size_t n)
 {
-    (void)fd;
-    (void)buf;
-    (void)n;
+    ssize_t w;
+    size_t done = 0;
+    unsigned char* uc_buf = (unsigned char *)buf;
+    if (uc_buf == NULL)
+    {
+        return -1;
+    }
+    if (n == 0)
+    {
+        return 1;
+    }
+    while (1)
+    {
+        w = write(fd, uc_buf + done, n - done);
+        if (w < 0)
+        {
+            if (errno == EINTR)
+            {
+                continue;
+            }
+            return -1;
+        }
+        if (w == 0)
+        {
+            return -1;
+        }
+        if (w > 0)
+        {
+            done += w;
+            if (done == n)
+            {
+                return 1;
+            }
+        }
+
+    }
     return -1;
 }
 
@@ -68,6 +146,7 @@ int write_all(int fd, const void *buf, size_t n)
 /* ------------------------------------------------------------------ */
 int read_frame(int fd, unsigned char *buf, size_t cap, size_t *len)
 {
+
     (void)fd;
     (void)buf;
     (void)cap;

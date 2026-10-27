@@ -34,8 +34,27 @@
 /*  - Save and restore errno inside the handler if it calls anything  */
 /*    that can change it. waitpid can.                                */
 /* ------------------------------------------------------------------ */
+
+static void on_sigchld(int sig)
+{
+    (void)sig;
+    while (waitpid(-1, NULL, WNOHANG) > 0)
+    {
+
+    }
+}
+
+
+
 static void install_sigchld_handler(void)
 {
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = on_sigchld;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+    sigaction(SIGCHLD, &sa, NULL);
+    (signal(SIGPIPE, SIG_IGN));
 }
 
 /* ------------------------------------------------------------------ */

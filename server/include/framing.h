@@ -15,7 +15,7 @@ enum {
  * -1 on error or when the peer closed after some of the bytes. */
 int read_exact(int fd, void *buf, size_t n);
 
-/* Write exactly n bytes. Returns 0 on success, -1 on error. */
+/* Write exactly n bytes. Returns 1 on success, -1 on error. */
 int write_all(int fd, const void *buf, size_t n);
 
 /* Read one frame: 2-byte big-endian length, then that many bytes.

@@ -120,6 +120,23 @@ int iso_parse(const unsigned char *buf, size_t len, iso_msg *out)
     (void)buf;
     (void)len;
     (void)out;
+    if (out == NULL)
+    {
+        return ISO_ERR_OVERFLOW;
+    }
+    if (len < 4)
+    {
+        return ISO_ERR_BAD_MTI;
+    }
+    if (len < 11)
+    {
+        return ISO_ERR_BAD_FIELD;
+    }
+    size_t offset = 0;
+    memcpy(&out->mti[0], buf + offset, 4);
+    out->mti[4] = '\0';
+    offset += 4;
+
     return ISO_ERR_NOT_IMPL;
 }
 

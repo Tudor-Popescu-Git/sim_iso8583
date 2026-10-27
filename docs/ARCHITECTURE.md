@@ -191,7 +191,7 @@ All field *values* are ASCII text. The bitmap is the only binary part.
 
 ### 6.2 MTI (message type indicator)
 
-Four digits. Each digit has a meaning:
+Four digits. Each digit has a meaning:  
 
 ```
    0   2   0   0
